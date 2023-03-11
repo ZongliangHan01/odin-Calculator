@@ -4,6 +4,7 @@ const resultDis = document.querySelector(".result");
 const equal = document.querySelector(".equal");
 const clear = document.querySelector(".clear");
 const del = document.querySelector(".delete");
+const point = document.querySelector(".point");
 
 let expression=""; 
 let result = "";
@@ -12,15 +13,62 @@ let flag = true;
 inputs.forEach(input=>{
     input.addEventListener("click", display);
 })
+point.addEventListener("click", addPoint);
 equal.addEventListener("click", calculate);
 clear.addEventListener("click", clearScreen);
 del.addEventListener("click", delNum);
+
+document.addEventListener("keydown", keyboardInput);
+
+function keyboardInput(e){
+    console.log(e.key)
+    if (["+", "-"].includes(e.key)) {
+        expression += (" "+e.key+" ");
+        flag = true;
+    //keyboard input *
+    } else if (e.key == "*"){
+        expression += (" × ");
+    //keyboard input /
+    } else if (e.key == "/"){
+        expression += (" ÷ ")
+    //delete one character 
+    } else if (e.key == "Backspace"){
+        delNum();
+    //input an digit
+    }   else if (["1", "2", "3", "4", "5", "6", "7", "8", "9", "9", "0"].includes(e.key)) {
+        expression += e.key;
+    //if expression end with digit and input an operator add space in front and behind of it.
+    } else if (["+", "-", "×", "÷"].includes(expression.slice(-1))) {
+        expression += (" "+e.key);
+    }
+    
+    //display new input and reset the result. 
+    screen.textContent = expression;
+    result = "";
+    resultDis.textContent = result;
+
+    if (e.key == "=") {
+        calculate();
+    }
+
+    
+}
+
+
+function addPoint(e) {
+    if (flag) {
+        expression+=e.target.textContent;
+        screen.textContent = expression;
+        flag = false;
+    }
+}
 
 //display input expression on screen
 function display(e) {
     //if expression end with operator, add a space behind operator
     if (["+", "-", "×", "÷"].includes(e.target.textContent)) {
         expression += (" "+e.target.textContent+" ");
+        flag = true;
     //if expression end with digit and input an operator add space in front and behind of it.     
     } else if (["+", "-", "×", "÷"].includes(expression.slice(-1))) {
         expression += (" "+e.target.textContent);
@@ -124,7 +172,7 @@ function evaluate(string) {
             digit.unshift(result);
         }   
     }
-    return digit[0];
+    return digit[0].toFixed(3);
 }
 
 
