@@ -20,6 +20,7 @@ del.addEventListener("click", delNum);
 
 document.addEventListener("keydown", keyboardInput);
 
+//keyboard input into calculator
 function keyboardInput(e){
     console.log(e.key)
     if (["+", "-"].includes(e.key)) {
@@ -31,9 +32,14 @@ function keyboardInput(e){
     //keyboard input /
     } else if (e.key == "/"){
         expression += (" ÷ ")
+    } else if (e.key == "." && flag == true) {
+        expression += e.key;
+        flag = false;
     //delete one character 
     } else if (e.key == "Backspace"){
         delNum();
+    } else if (e.key == "c") {
+        clearScreen();
     //input an digit
     }   else if (["1", "2", "3", "4", "5", "6", "7", "8", "9", "9", "0"].includes(e.key)) {
         expression += e.key;
@@ -47,14 +53,12 @@ function keyboardInput(e){
     result = "";
     resultDis.textContent = result;
 
-    if (e.key == "=") {
+    if (e.key == "=" || e.key == "Enter") {
         calculate();
-    }
-
-    
+    }  
 }
 
-
+//check if point has been added
 function addPoint(e) {
     if (flag) {
         expression+=e.target.textContent;
