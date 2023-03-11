@@ -1,3 +1,92 @@
+const screen = document.querySelector(".display");
+const inputs = document.querySelectorAll(".input");
+const resultDis = document.querySelector(".result");
+const equal = document.querySelector(".equal");
+const clear = document.querySelector(".clear");
+const del = document.querySelector(".delete");
+
+let expression=""; 
+let result = "";
+let flag = true;
+
+inputs.forEach(input=>{
+    input.addEventListener("click", display);
+})
+equal.addEventListener("click", calculate);
+clear.addEventListener("click", clearScreen);
+del.addEventListener("click", delNum);
+
+//display input expression on screen
+function display(e) {
+    //if expression end with operator, add a space behind operator
+    if (["+", "-", "×", "÷"].includes(e.target.textContent)) {
+        expression += (" "+e.target.textContent+" ");
+    //if expression end with digit and input an operator add space in front and behind of it.     
+    } else if (["+", "-", "×", "÷"].includes(expression.slice(-1))) {
+        expression += (" "+e.target.textContent);
+    //input an digit
+    }   else {
+        expression += e.target.textContent;
+    }
+    
+    //display new input and reset the result. 
+    screen.textContent = expression;
+    result = "";
+    resultDis.textContent = result;
+}
+
+
+//calculate result
+function calculate() {
+    result = evaluate(expression);
+    resultDis.textContent = result;
+}
+
+
+//clear all input and result. 
+function clearScreen() {
+    expression = "";
+    screen.textContent = "";
+    result = "";
+    resultDis.textContent = result;
+}
+
+
+//delete a single input
+function delNum() {
+    //if expression end with a space, delete it straight away. 
+    if (expression.slice(-1)===" ") {
+        expression = expression.substring(0, expression.length-1);
+    }
+    //delete the digit or operator. 
+    expression = expression.substring(0, expression.length-1);
+    
+    //if there is a space after delete the char, delete it straight away. 
+    if (expression.slice(-1)===" ") {
+        expression = expression.substring(0, expression.length-1);
+    } 
+    
+    //update input and result display
+    screen.textContent = expression;
+    result = "";
+    resultDis.textContent = result;
+}
+
+
+//calculate based on operator
+function operate(operator, a, b) {
+    if (operator=="+") {
+        return add(a,b);
+    } else if (operator=="-") {
+        return subtract(a,b);
+    } else if (operator=="×") {
+        return multiply(a,b);
+    } else if (operator=="÷") {
+        return divide(a,b);
+    }
+}
+
+
 function add(a,b) {
     return a+b;
 }
@@ -14,154 +103,68 @@ function divide(a, b) {
     return a/b;
 }
 
-function operate(operator, a, b) {
-    if (operator=="+") {
-        return add(a,b);
-    } else if (operator=="-") {
-        return subtract(a,b);
-    } else if (operator=="×") {
-        return multiply(a,b);
-    } else if (operator=="÷") {
-        return divide(a,b);
-    }
-}
-
-const screen = document.querySelector(".display");
-
-const inputs = document.querySelectorAll(".input");
-
-let expression=""; 
-let result = "";
-
-const resultDis = document.querySelector(".result");
-
-
-inputs.forEach(input=>{
-    input.addEventListener("click", display);
-})
-
-function display(e) {
-    if (["+", "-", "×", "÷"].includes(e.target.textContent)) {
-        expression += (" "+e.target.textContent+" ");
-    } else if (["+", "-", "×", "÷"].includes(expression.slice(-1))) {
-        expression += (" "+e.target.textContent);
-        console.log("add space")
-    }   else {
-        expression += e.target.textContent;
-    }
-    
-    screen.textContent = expression;
-    result = "";
-    resultDis.textContent = result;
-}
-
-let flag = true;
-
-const equal = document.querySelector(".equal");
-
-equal.addEventListener("click", calculate);
-
-
-function calculate() {
-    result = evaluate(expression);
-    resultDis.textContent = result;
-}
-
-const clear = document.querySelector(".clear");
-clear.addEventListener("click", clearScreen);
-
-function clearScreen() {
-    expression = "";
-    screen.textContent = "";
-    result = "";
-    resultDis.textContent = result;
-}
-
-const del = document.querySelector(".delete");
-del.addEventListener("click", delNum);
-
-function delNum() {
-    if (expression.slice(-1)===" ") {
-        expression = expression.substring(0, expression.length-1);
-    }
-    expression = expression.substring(0, expression.length-1);
-    //console.log(expression.slice(-1));
-    if (expression.slice(-1)===" ") {
-        expression = expression.substring(0, expression.length-1);
-    } 
-    screen.textContent = expression;
-    console.log(expression);
-    console.log("the last char is "+expression.slice(-1))
-}
-
+//evaluate expression in correct math order.
 function evaluate(string) {
     //turn the infix expression to prefix expression
     const preString = prefix(string);
-    console.log(preString);
+    
+    //read digit in stack and calculate based on operator 
     let digit = [];
-    //read digit and operator in stack 
     for (element of preString) {
+        
         if (!isNaN(Number(element))) {
+            //add digit in stack
             digit.unshift(Number(element));
-            console.log(digit);
+        
         } else {
+            //calculate result of current operator and put result into stack after delete previous two digit
             let result = operate(element, digit[1], digit[0]);
             digit.shift();
             digit.shift();
             digit.unshift(result);
-            console.log(digit);
-        }
-        
+        }   
     }
-    
     return digit[0];
-    //calculate result
 }
 
+
+//turn the expression to prefix order
 function prefix(string) {
     let operator = [];
     let out = [];
     const expression = string.split(" ");
-    console.log(expression);
+
     for (char of expression) {
         if (!isNaN(Number(char))) {
+            //put number into output 
             out.push(char);
-            console.log("current operator"+operator);
-            console.log("current out"+out);
         } else {
+            //put operator into output
             let temp=[""];
             temp = tempList(temp, operator)
             for (ope of temp) {
-                //high priority 
+                //high priority, add to the left of operator list 
                 if (checkPriority(ope, char)) {
                     operator.unshift(char);
-                    console.log("comparing"+ope+char)
-                    console.log("current operator"+operator);
-                    console.log("current out"+out);
                     break;
-                //low priority
+                //low priority, move the high priority operator into output list
                 } else {
-                    console.log("comparing"+ope+char)
                     out.push(operator.shift());
-                    console.log("current operator"+operator);
-                    console.log("current out"+out);
                 }
             }
+            //no operator in the list, put the current one in list
             if (operator.length == 0) {
                 operator.push(char);
-                console.log("current operator"+operator);
-                console.log("current out"+out);
-            }
-            
+            }           
         }
     }
+    //append the rest of operator into output
     out = out.concat(operator);
-    
-    //console.log(expression);
-    console.log(out);
     return out;
 }
 
+
+//check the priority of two operators
 function checkPriority(first, second) {
     if (first == "") {
         return true;
@@ -174,6 +177,8 @@ function checkPriority(first, second) {
     return false;
 }
 
+
+//copy the list
 function tempList(temp, list) {
     for (let i=0; i<list.length; i++) {
         temp[i]=list[i];
